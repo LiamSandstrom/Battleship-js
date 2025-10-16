@@ -30,6 +30,26 @@ body {
   aspect-ratio: 1 / 1;
 }
 
+.cell {
+  border: 1px solid var(--board-color);
+}
+
+.default-cell {
+  background-color: rgb(117, 181, 205);
+}
+
+.default-cell-hit {
+  background-color: rgb(168, 83, 83);
+}
+
+.ship-cell {
+  background-color: rgb(127, 131, 132);
+}
+
+.ship-cell-hit {
+  background-color: rgb(127, 131, 132);
+}
+
 @media screen and (min-width: 568px) {
   #content-wrapper {
     grid-template-columns: repeat(2, 1fr);

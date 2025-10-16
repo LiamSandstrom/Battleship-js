@@ -39,6 +39,10 @@ export class Cell {
     this.#value = val;
   }
 
+  isShip() {
+    return isValidShip(this.#value);
+  }
+
   get value() {
     return this.#value;
   }
@@ -91,6 +95,19 @@ export class GameBoard {
   getCell([row, col]) {
     if (!this.#inRange([row, col])) return;
     return this.#gameBoard2dArr[row][col];
+  }
+
+  getFlatBoardCopy() {
+    const flat = [];
+    for (const row of this.#gameBoard2dArr) {
+      for (const cell of row) {
+        flat.push({
+          isHit: cell.isHit(),
+          isShip: cell.isShip(),
+        });
+      }
+    }
+    return flat;
   }
 
   #inRange([row, col]) {

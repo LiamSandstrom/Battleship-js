@@ -4,4 +4,6 @@ export class Player {
   constructor(board) {
     this.#board = board;
   }
+
+  getBoard = () => this.#board;
 }
