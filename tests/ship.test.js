@@ -3,11 +3,11 @@ import { Ship } from "../src/Ship";
 test("isSunk returns true only after enough hits", () => {
   const s = new Ship(2);
   expect(s.isSunk()).toBe(false);
-  s.hit();
+  s.hit([0, 0]);
   expect(s.isSunk()).toBe(false);
-  s.hit();
+  s.hit([0, 1]);
   expect(s.isSunk()).toBe(true);
-  s.hit();
+  s.hit([0, 2]);
   expect(s.isSunk()).toBe(true);
 });
 

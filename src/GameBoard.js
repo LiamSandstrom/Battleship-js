@@ -19,40 +19,62 @@ export function isValidShip(ship) {
 
 export class GameBoard {
   #gameBoard2dArr;
+  #cellState = {
+    EMPTY: 0,
+    MISS: 1,
+  };
 
   constructor(size) {
     this.setNewBoard(size);
   }
 
   setNewBoard(size) {
-    this.#gameBoard2dArr = create2dArray(size);
+    this.#gameBoard2dArr = create2dArray(size, this.#cellState.EMPTY);
   }
 
-  placeShipVertical([row, col], ship) {
+  placeShip(cordsArr, ship) {
     if (!isValidShip(ship)) return;
-    const endCol = col + ship.length;
-
-    for (let currCol = col; currCol < endCol; currCol++) {
-      this.#placeShip([row, currCol], ship);
+    for (const cords of cordsArr) {
+      this.#placeShipAtCell(cords, ship);
     }
   }
 
-  placeShipHorizontal([row, col], ship) {
-    if (!isValidShip(ship)) return;
-    const endRow = row + ship.length;
-
-    for (let currRow = row; currRow < endRow; currRow++) {
-      this.#placeShip([currRow, col], ship);
-    }
-  }
-
-  #placeShip([row, col], ship) {
-    if (!inRange([row, col], this.#gameBoard2dArr.length)) return;
+  #placeShipAtCell([row, col], ship) {
+    if (!this.#inRange([row, col])) return;
     this.#gameBoard2dArr[row][col] = ship;
   }
 
+  receiveAttack([row, col]) {
+    if (!this.#canAttackCords([row, col])) return;
+
+    const cell = this.getCell([row, col]);
+
+    if (cell === this.getCellEmptyEnum()) {
+      this.#gameBoard2dArr[row][col] = this.getCellMissEnum();
+    }
+    //Is valid ship
+    else {
+      cell.hit([row, col]);
+    }
+  }
+
+  #canAttackCords([row, col]) {
+    const cell = this.getCell([row, col]);
+    if (cell === undefined) return false;
+    if (cell === this.getCellMissEnum()) return false;
+    if (isValidShip(cell) && cell.areCordsHit()) return false;
+    return true;
+  }
+
   getCell([row, col]) {
-    if (!inRange([row, col], this.#gameBoard2dArr.length)) return;
+    if (!this.#inRange([row, col])) return;
     return this.#gameBoard2dArr[row][col];
+  }
+
+  getCellEmptyEnum = () => this.#cellState.EMPTY;
+  getCellMissEnum = () => this.#cellState.MISS;
+
+  #inRange([row, col]) {
+    return inRange([row, col], this.#gameBoard2dArr.length);
   }
 }

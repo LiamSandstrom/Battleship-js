@@ -51,32 +51,48 @@ test("isValidShip", () => {
 test("getCell", () => {
   const gb = new GameBoard(5);
   expect(gb.getCell([3, 5])).toBe(undefined);
+  expect(gb.getCell([3, 4])).toBe(gb.getCellEmptyEnum());
 });
 
-test("PlaceShipVertical places ship in correct cells", () => {
+test("placeShip places ship in correct cells", () => {
   const gb = new GameBoard(5);
-  const sLength = 3;
-  const sStart = 0;
-  const x = 2;
-  const s = new Ship(sLength);
+  const s = new Ship(3);
+  const shipCords = [
+    [0, 0],
+    [0, 1],
+    [0, 2],
+  ];
 
-  gb.placeShipVertical([x, sStart], s);
-  for (let i = sStart; i < sLength; i++) {
-    expect(gb.getCell([x, i])).toBe(s);
+  gb.placeShip(shipCords, s);
+  for (const cord of shipCords) {
+    const cell = gb.getCell(cord);
+    expect(cell).toBe(s);
   }
-  expect(gb.getCell([x, sStart + sLength])).not.toBe(s);
+  expect(gb.getCell([0, 3])).not.toBe(s);
 });
 
-test("PlaceShipHorizontal places ship in correct cells", () => {
-  const gb = new GameBoard(7);
-  const sLength = 4;
-  const sStart = 1;
-  const y = 3;
-  const s = new Ship(sLength);
+test("receiveAttack on ship", () => {
+  const gb = new GameBoard(5);
+  const s = new Ship(3);
+  const shipCords = [
+    [0, 0],
+    [0, 1],
+    [0, 2],
+  ];
+  gb.placeShip(shipCords, s);
 
-  gb.placeShipHorizontal([sStart, y], s);
-  for (let i = sStart; i < sLength; i++) {
-    expect(gb.getCell([i, y])).toBe(s);
-  }
-  expect(gb.getCell([sStart + sLength, y])).not.toBe(s);
+  gb.receiveAttack([0, 1]);
+
+  const cell = gb.getCell([0, 1]);
+  expect(cell.areCordsHit([0, 1])).toBe(true);
+});
+
+test("receiveAttack on empty", () => {
+  const gb = new GameBoard(5);
+
+  gb.receiveAttack([0, 1]);
+
+  const cell = gb.getCell([0, 1]);
+  expect(cell).toBe(gb.getCellMissEnum());
+  expect(gb.getCell([0, 0])).toBe(gb.getCellEmptyEnum());
 });
