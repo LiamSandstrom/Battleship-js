@@ -29,11 +29,14 @@ test("create2dArray fills with correct value", () => {
 
 describe("InRange bounds test", () => {
   test.each([
-    { cords: [100, 6], size: 7, expected: false },
-    { cords: [10, 2], size: 10, expected: false },
-    { cords: [-5, -2], size: 3, expected: false },
-    { cords: [6, 0], size: 7, expected: true },
-  ])(
+    { cords: [100, 6], size: 7 },
+    { cords: [10, 2], size: 10 },
+    { cords: [-5, -2], size: 3 },
+  ])("Cords: $cords with size: $size should throw", ({ cords, size }) => {
+    expect(() => inRange(cords, size)).toThrow("OUT OF RANGE");
+  });
+
+  test.each([{ cords: [6, 0], size: 7, expected: true }])(
     "Cords: $cords with size: $size expected $expected",
     ({ cords, size, expected }) => {
       const result = inRange(cords, size);
@@ -50,7 +53,6 @@ test("isValidShip", () => {
 
 test("getCell", () => {
   const gb = new GameBoard(5);
-  expect(gb.getCell([3, 5])).toBe(undefined);
   expect(gb.getCell([3, 4])).toBe(gb.getCellEmptyEnum());
 });
 
@@ -95,4 +97,47 @@ test("receiveAttack on empty", () => {
   const cell = gb.getCell([0, 1]);
   expect(cell).toBe(gb.getCellMissEnum());
   expect(gb.getCell([0, 0])).toBe(gb.getCellEmptyEnum());
+});
+
+describe("GameBoard AllShipsSunken", () => {
+  test("returns true if all ships are sunk", () => {
+    const board = new GameBoard(5);
+
+    const ship1 = new Ship(2);
+    const ship2 = new Ship(3);
+
+    board.placeShip(
+      [
+        [0, 0],
+        [0, 1],
+      ],
+      ship1
+    );
+    board.placeShip(
+      [
+        [1, 0],
+        [1, 1],
+        [1, 2],
+      ],
+      ship2
+    );
+
+    expect(board.AllShipsSunken()).toBe(false);
+
+    ship1.hit([0, 0]);
+    ship1.hit([0, 1]);
+
+    expect(board.AllShipsSunken()).toBe(false);
+
+    ship2.hit([1, 0]);
+    ship2.hit([1, 1]);
+    ship2.hit([1, 2]);
+
+    expect(board.AllShipsSunken()).toBe(true);
+  });
+
+  test("returns true if there are no ships", () => {
+    const board = new GameBoard(5);
+    expect(board.AllShipsSunken()).toBe(true);
+  });
 });

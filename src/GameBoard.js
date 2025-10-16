@@ -7,8 +7,8 @@ export function create2dArray(size, initialValue = null) {
 }
 
 export function inRange([row, col], size) {
-  if (row < 0 || row >= size) return false;
-  if (col < 0 || col >= size) return false;
+  if (row < 0 || row >= size) throw new Error("OUT OF RANGE");
+  if (col < 0 || col >= size) throw new Error("OUT OF RANGE");
   return true;
 }
 
@@ -19,6 +19,8 @@ export function isValidShip(ship) {
 
 export class GameBoard {
   #gameBoard2dArr;
+  #ships = [];
+
   #cellState = {
     EMPTY: 0,
     MISS: 1,
@@ -37,6 +39,7 @@ export class GameBoard {
     for (const cords of cordsArr) {
       this.#placeShipAtCell(cords, ship);
     }
+    this.#ships.push(ship);
   }
 
   #placeShipAtCell([row, col], ship) {
@@ -63,6 +66,13 @@ export class GameBoard {
     if (cell === undefined) return false;
     if (cell === this.getCellMissEnum()) return false;
     if (isValidShip(cell) && cell.areCordsHit()) return false;
+    return true;
+  }
+
+  AllShipsSunken() {
+    for (const ship of this.#ships) {
+      if (!ship.isSunk()) return false;
+    }
     return true;
   }
 
