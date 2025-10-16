@@ -1,0 +1,37 @@
+:root {
+  --bg-color: black;
+  --board-color: white;
+}
+
+body {
+  background-color: var(--bg-color);
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#content-wrapper {
+  height: auto;
+  width: 100vw;
+  min-width: 400px;
+  max-width: 1100px;
+
+  display: grid;
+  padding: 30px;
+  gap: 20px;
+}
+
+.board {
+  border: 1px solid var(--board-color);
+  display: grid;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+@media screen and (min-width: 568px) {
+  #content-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -1,4 +1,4 @@
-import { Ship } from "./Ship";
+import { Ship } from "./Ship.js";
 
 export function create2dArray(size, valueFactory = () => null) {
   if (size <= 0) throw new Error("Tried to create 2dArray with size <= 0");
