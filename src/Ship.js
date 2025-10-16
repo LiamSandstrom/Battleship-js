@@ -10,6 +10,10 @@ export class Ship {
     this.#length = length;
   }
 
+  get length() {
+    return this.#length;
+  }
+
   hit() {
     this.#hit++;
   }
