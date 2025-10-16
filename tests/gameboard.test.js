@@ -2,6 +2,7 @@ import { GameBoard, inRange } from "../src/GameBoard";
 import { create2dArray } from "../src/GameBoard";
 import { isValidShip } from "../src/GameBoard";
 import { Ship } from "../src/Ship";
+import { Cell } from "../src/GameBoard";
 
 test("create2dArray throws if size <= 0", () => {
   expect(() => create2dArray(0)).toThrow(
@@ -53,7 +54,7 @@ test("isValidShip", () => {
 
 test("getCell", () => {
   const gb = new GameBoard(5);
-  expect(gb.getCell([3, 4])).toBe(gb.getCellEmptyEnum());
+  expect(gb.getCell([3, 4]) instanceof Cell).toBe(true);
 });
 
 test("placeShip places ship in correct cells", () => {
@@ -68,7 +69,7 @@ test("placeShip places ship in correct cells", () => {
   gb.placeShip(shipCords, s);
   for (const cord of shipCords) {
     const cell = gb.getCell(cord);
-    expect(cell).toBe(s);
+    expect(cell.value).toBe(s);
   }
   expect(gb.getCell([0, 3])).not.toBe(s);
 });
@@ -86,7 +87,7 @@ test("receiveAttack on ship", () => {
   gb.receiveAttack([0, 1]);
 
   const cell = gb.getCell([0, 1]);
-  expect(cell.areCordsHit([0, 1])).toBe(true);
+  expect(cell.isHit()).toBe(true);
 });
 
 test("receiveAttack on empty", () => {
@@ -95,8 +96,8 @@ test("receiveAttack on empty", () => {
   gb.receiveAttack([0, 1]);
 
   const cell = gb.getCell([0, 1]);
-  expect(cell).toBe(gb.getCellMissEnum());
-  expect(gb.getCell([0, 0])).toBe(gb.getCellEmptyEnum());
+  expect(gb.getCell([0, 0]).isHit()).toBe(false);
+  expect(cell.isHit()).toBe(true);
 });
 
 describe("GameBoard AllShipsSunken", () => {

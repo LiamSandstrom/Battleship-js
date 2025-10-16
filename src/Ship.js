@@ -1,30 +1,24 @@
 export class Ship {
   #length;
-  #hitCords;
+  #hit;
 
   constructor(length) {
     if (length <= 0)
       throw new Error("Tried to instantiate Ship with Length < 0");
 
     this.#length = length;
-    this.#hitCords = [];
+    this.#hit = 0;
   }
 
   get length() {
     return this.#length;
   }
 
-  hit(cords) {
-    this.#hitCords.push(cords);
-  }
-
-  areCordsHit(cords) {
-    return this.#hitCords.some(
-      (c) => c.length === cords.length && c.every((v, i) => v === cords[i])
-    );
+  hit() {
+    this.#hit++;
   }
 
   isSunk() {
-    return this.#hitCords.length >= this.#length ? true : false;
+    return this.#hit >= this.#length ? true : false;
   }
 }

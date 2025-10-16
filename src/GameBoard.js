@@ -1,9 +1,12 @@
 import { Ship } from "./Ship";
 
-export function create2dArray(size, initialValue = null) {
+export function create2dArray(size, valueFactory = () => null) {
   if (size <= 0) throw new Error("Tried to create 2dArray with size <= 0");
-
-  return Array.from({ length: size }, () => Array(size).fill(initialValue));
+  const factory =
+    typeof valueFactory === "function" ? valueFactory : () => valueFactory;
+  return Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => factory())
+  );
 }
 
 export function inRange([row, col], size) {
@@ -17,21 +20,44 @@ export function isValidShip(ship) {
   return true;
 }
 
+export class Cell {
+  #value;
+  #isHit = false;
+  constructor(val = null) {
+    this.#value = val;
+  }
+
+  hit() {
+    if (this.#isHit) return;
+    this.#isHit = true;
+    if (!isValidShip(this.#value)) return;
+    this.#value.hit();
+  }
+
+  set value(val) {
+    if (!isValidShip(val)) return;
+    this.#value = val;
+  }
+
+  get value() {
+    return this.#value;
+  }
+
+  isHit() {
+    return this.#isHit;
+  }
+}
+
 export class GameBoard {
   #gameBoard2dArr;
   #ships = [];
-
-  #cellState = {
-    EMPTY: 0,
-    MISS: 1,
-  };
 
   constructor(size) {
     this.setNewBoard(size);
   }
 
   setNewBoard(size) {
-    this.#gameBoard2dArr = create2dArray(size, this.#cellState.EMPTY);
+    this.#gameBoard2dArr = create2dArray(size, () => new Cell());
   }
 
   placeShip(cordsArr, ship) {
@@ -43,30 +69,16 @@ export class GameBoard {
   }
 
   #placeShipAtCell([row, col], ship) {
-    if (!this.#inRange([row, col])) return;
-    this.#gameBoard2dArr[row][col] = ship;
+    this.getCell([row, col]).value = ship;
   }
 
   receiveAttack([row, col]) {
-    if (!this.#canAttackCords([row, col])) return;
-
     const cell = this.getCell([row, col]);
-
-    if (cell === this.getCellEmptyEnum()) {
-      this.#gameBoard2dArr[row][col] = this.getCellMissEnum();
+    if (!(cell instanceof Cell)) {
+      console.error("Not a Cell:", cell);
+      throw new Error("Cell is invalid");
     }
-    //Is valid ship
-    else {
-      cell.hit([row, col]);
-    }
-  }
-
-  #canAttackCords([row, col]) {
-    const cell = this.getCell([row, col]);
-    if (cell === undefined) return false;
-    if (cell === this.getCellMissEnum()) return false;
-    if (isValidShip(cell) && cell.areCordsHit()) return false;
-    return true;
+    cell.hit();
   }
 
   AllShipsSunken() {
@@ -80,9 +92,6 @@ export class GameBoard {
     if (!this.#inRange([row, col])) return;
     return this.#gameBoard2dArr[row][col];
   }
-
-  getCellEmptyEnum = () => this.#cellState.EMPTY;
-  getCellMissEnum = () => this.#cellState.MISS;
 
   #inRange([row, col]) {
     return inRange([row, col], this.#gameBoard2dArr.length);
