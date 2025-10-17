@@ -1,8 +1,9 @@
-import { renderBoard } from "./UI/BoardUI.js";
+import { addBorderToShip, renderBoard } from "./UI/BoardUI.js";
 import { Ship } from "./logic/Ship.js";
-import { randomInt } from "./helpers/utils.js";
+import { cordsArrToIndexArr, randomInt } from "./helpers/utils.js";
 import { GameBoard } from "./logic/GameBoard.js";
 import { Player } from "./Player.js";
+import { cordsToIndex, indexToCords } from "./helpers/utils.js";
 
 export class Controller {
   #p1;
@@ -10,6 +11,7 @@ export class Controller {
   #currentPlayer;
   #defaultShips;
   #p2IsAI;
+  #boardSize;
 
   constructor({
     boardSize = 10,
@@ -18,6 +20,7 @@ export class Controller {
   } = {}) {
     this.#defaultShips = ships.sort();
     this.#p2IsAI = p2IsAI;
+    this.#boardSize = boardSize;
 
     const board1 = new GameBoard(boardSize);
     const board2 = new GameBoard(boardSize);
@@ -35,6 +38,8 @@ export class Controller {
     const flatArr2 = this.#p2.getBoard().getFlatBoardCopy();
     renderBoard(this.#p1.getDomBoard(), flatArr1, this.cellClicked);
     renderBoard(this.#p2.getDomBoard(), flatArr2, this.cellClicked);
+    this.setShipBorderAll(this.#p1);
+    this.setShipBorderAll(this.#p2);
   }
 
   initialShipSpawn() {
@@ -77,6 +82,22 @@ export class Controller {
     board.placeShip(cords, ship);
   }
 
+  setShipBorderAll(player, ship) {
+    const ships = player.getBoard().getShips();
+    const domBoard = player.getDomBoard();
+
+    for (const [ship, cords] of ships) {
+      const index = cordsArrToIndexArr(cords, this.#boardSize);
+      addBorderToShip(domBoard, index);
+    }
+  }
+
+  setShipBorder(player, ship) {
+    const shipCords = player.getBoard().getShips().get(ship);
+    const domBoard = player.getDomBoard();
+    addBorderToShip(domBoard, shipCords);
+  }
+
   cellClicked = ([row, col], cell) => {
     if (this.#currentPlayer.getDomBoard() != cell.parentElement) return;
 
@@ -93,7 +114,6 @@ export class Controller {
 }
 
 //TODO:
-//set border on ship middle just sides, start also start end also end
 
 //TODO:
 //add drag and drop
@@ -103,3 +123,7 @@ export class Controller {
 //blur real ship while dragging
 //move ship method on GameBoard
 //move real ship on valid drop
+
+
+//LOW PRIO:
+//fix so hit ship does not have small board border

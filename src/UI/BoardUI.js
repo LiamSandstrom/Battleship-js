@@ -38,3 +38,21 @@ export function renderBoard(div, arr, cellClickedCb) {
     }
   }
 }
+
+export function addBorderToShip(div, iArr) {
+    console.log(iArr);
+  const horizontal = iArr[0] + 1 === iArr[1] ? true : false;
+  for (let i = 0; i < iArr.length; i++) {
+    const ele = div.children[iArr[i]];
+    let className = "";
+    if (i === 0) {
+      className = horizontal ? "hor-start" : "ver-start";
+    }
+    else if (i === iArr.length - 1) {
+      className = horizontal ? "hor-end" : "ver-end";
+    } else {
+      className = horizontal ? "hor" : "ver";
+    }
+    ele.classList.add(className);
+  }
+}

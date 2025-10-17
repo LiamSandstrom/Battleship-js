@@ -92,6 +92,8 @@ export class GameBoard {
     return true;
   }
 
+  getShips = () => this.#ships;
+
   getCell([row, col]) {
     if (!this.#inRange([row, col])) return;
     return this.#gameBoard2dArr[row][col];
