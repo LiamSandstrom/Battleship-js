@@ -1,6 +1,6 @@
 :root {
   --bg-color: black;
-  --board-color: white;
+  --board-color: rgba(255, 255, 255, 0.502);
 }
 
 body {
@@ -39,7 +39,7 @@ body {
 }
 
 .default-cell-hit {
-  background-color: rgb(168, 83, 83);
+  background-color: rgb(60, 74, 95);
 }
 
 .ship-cell {
@@ -47,7 +47,7 @@ body {
 }
 
 .ship-cell-hit {
-  background-color: rgb(127, 131, 132);
+  background-color: rgb(168, 83, 83);
 }
 
 @media screen and (min-width: 568px) {

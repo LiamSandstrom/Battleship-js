@@ -110,6 +110,8 @@ export class GameBoard {
     return flat;
   }
 
+  getLength = () => this.#gameBoard2dArr.length;
+
   #inRange([row, col]) {
     return inRange([row, col], this.#gameBoard2dArr.length);
   }
