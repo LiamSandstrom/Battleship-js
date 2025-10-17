@@ -1,7 +1,7 @@
 export class Ship {
   #length;
   #hit;
-
+  #cords = [];
   constructor(length) {
     if (length <= 0)
       throw new Error("Tried to instantiate Ship with Length < 0");
@@ -16,7 +16,6 @@ export class Ship {
 
   hit() {
     this.#hit++;
-    console.log(this.#hit);
   }
 
   isSunk() {

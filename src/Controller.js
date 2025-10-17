@@ -38,8 +38,6 @@ export class Controller {
   }
 
   initialShipSpawn() {
-    const maxIndex = this.#p1.getBoardSize() - 1;
-
     for (const shipSize of this.#defaultShips) {
       this.#spawnShip(shipSize, this.#p1);
     }
@@ -69,7 +67,7 @@ export class Controller {
         cords.push([r, c]);
       }
 
-      if (cords.length === shipSize) break; // valid position found
+      if (cords.length === shipSize) break;
     }
 
     if (cords.length !== shipSize)
@@ -93,3 +91,15 @@ export class Controller {
     else this.#currentPlayer = this.#p1;
   }
 }
+
+//TODO:
+//set border on ship middle just sides, start also start end also end
+
+//TODO:
+//add drag and drop
+//calc size of a cell.
+//get Width & height methods on ship
+//create fake div of this size
+//blur real ship while dragging
+//move ship method on GameBoard
+//move real ship on valid drop

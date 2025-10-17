@@ -1,4 +1,4 @@
-import { Ship } from "../src/Ship";
+import { Ship } from "../src/logic/Ship";
 
 test("isSunk returns true only after enough hits", () => {
   const s = new Ship(2);

@@ -1,8 +1,9 @@
-import { GameBoard, inRange } from "../src/GameBoard";
-import { create2dArray } from "../src/GameBoard";
-import { isValidShip } from "../src/GameBoard";
-import { Ship } from "../src/Ship";
-import { Cell } from "../src/GameBoard";
+import { create2dArray } from "../src/logic/GameBoard";
+import { GameBoard } from "../src/logic/GameBoard";
+import { isValidShip } from "../src/logic/GameBoard";
+import { inRange } from "../src/logic/GameBoard";
+import { Cell } from "../src/logic/GameBoard";
+import { Ship } from "../src/logic/Ship";
 
 test("create2dArray throws if size <= 0", () => {
   expect(() => create2dArray(0)).toThrow(

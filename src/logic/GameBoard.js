@@ -54,7 +54,7 @@ export class Cell {
 
 export class GameBoard {
   #gameBoard2dArr;
-  #ships = [];
+  #ships = new Map();
 
   constructor(size) {
     this.setNewBoard(size);
@@ -69,7 +69,7 @@ export class GameBoard {
     for (const cords of cordsArr) {
       this.#placeShipAtCell(cords, ship);
     }
-    this.#ships.push(ship);
+    this.#ships.set(ship, cordsArr);
   }
 
   #placeShipAtCell([row, col], ship) {
@@ -86,7 +86,7 @@ export class GameBoard {
   }
 
   AllShipsSunken() {
-    for (const ship of this.#ships) {
+    for (const ship of this.#ships.keys()) {
       if (!ship.isSunk()) return false;
     }
     return true;
