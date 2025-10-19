@@ -23,3 +23,37 @@ export function indexToCords(index, rowMax) {
   const column = index % rowMax;
   return [row, column];
 }
+
+export function indexArrToCordsArr(indexArr, rowMax) {
+  const cords = [];
+  for (const index of indexArr) {
+    const row = Math.floor(index / rowMax);
+    const column = index % rowMax;
+    cords.push([row, column]);
+  }
+  return cords;
+}
+
+export function isVertical(cords) {
+  return cords[0][0] == cords[1][0] ? false : true;
+}
+
+export function getShipSize(cords) {
+  if (cords.length <= 0) return;
+
+  const result = {
+    width: 0,
+    height: 0,
+  };
+
+  const vertical = isVertical(cords);
+  if (vertical) {
+    result.width = 1;
+    result.height = cords.length;
+  } else {
+    result.height = 1;
+    result.width = cords.length;
+  }
+
+  return result;
+}

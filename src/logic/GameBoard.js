@@ -117,4 +117,8 @@ export class GameBoard {
   #inRange([row, col]) {
     return inRange([row, col], this.#gameBoard2dArr.length);
   }
+
+  getShipCords(ship){
+    return this.#ships.get(ship)
+  }
 }

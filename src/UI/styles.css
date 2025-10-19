@@ -3,6 +3,8 @@
   --board-color: rgba(255, 255, 255, 0.502);
   --ship-border: 2px solid rgb(88, 88, 88);
   --water-color: rgb(117, 181, 205);
+  --can-place: rgb(121, 225, 121);
+  --cant-place: red;
 
   --ship-size: 90%;
 }
@@ -41,11 +43,30 @@ body {
 }
 
 .cell {
-  border: 1px solid #ffffff37;
+  position: relative;
+  display: grid;
+}
+
+.cell > *{
+  pointer-events: none;
+}
+
+.ship-cell.copy {
+  opacity: 50%;
+  position: absolute;
+
+  border-color: rgb(255, 255, 255);
+  background-color: var(--can-place);
+}
+
+.ship-cell.copy.cant-place{
+  background-color: var(--cant-place);
+
 }
 
 .default-cell {
   background-color: var(--water-color);
+  border: 1px solid #c5c1c1ce;
 }
 
 .default-cell-hit {
@@ -53,13 +74,18 @@ body {
   background-color: rgb(60, 74, 95);
 }
 
-.ship-cell {
+.ship-cell,
+.ship-copy {
   background-color: rgb(127, 131, 132);
   border: none;
 }
 
 .ship-cell-hit {
   background-color: rgb(168, 83, 83);
+}
+
+.ship-copy {
+  opacity: 50%;
 }
 
 .hor-start,
@@ -90,6 +116,8 @@ body {
   border-top: var(--ship-border);
   border-bottom: var(--ship-border);
   align-self: center;
+
+  width: 100%;
 }
 
 .hor-end {
@@ -119,6 +147,8 @@ body {
 .ver {
   border-right: var(--ship-border);
   border-left: var(--ship-border);
+
+  height: 100%;
 }
 
 .ver-end {
@@ -132,6 +162,13 @@ body {
   height: var(--ship-size);
   align-self: flex-start;
 }
+
+#board-copy {
+  position: fixed;
+  display: grid;
+  aspect-ratio: 1 / 1;
+}
+
 @media screen and (min-width: 900px) {
   #content-wrapper {
     grid-template-columns: repeat(2, 1fr);
