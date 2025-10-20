@@ -2,6 +2,7 @@ import {
   addBorderToShip,
   addCbToCells,
   removeCbFromCells,
+  removeShipAtIndexes,
   renderBoard,
 } from "./UI/BoardUI.js";
 import { Ship } from "./logic/Ship.js";
@@ -31,6 +32,7 @@ export class Controller {
   #boardSize;
   #state;
   #copyCells = [];
+  #currentHover = null;
 
   constructor({
     boardSize = 10,
@@ -182,36 +184,123 @@ export class Controller {
   beforePlayCellClicked = ([row, col], cell) => {
     const domBoard = this.#currentPlayer.getDomBoard();
     if (domBoard != cell.parentElement) return;
-    if (!this.#currentPlayer.getBoard().getCell([row, col]).isShip()) return;
+    const board = this.#currentPlayer.getBoard();
+    if (!board.getCell([row, col]).isShip()) return;
 
     const anchor = [row, col];
+    const ship = board.getCell(anchor).value;
+    const shipCords = board.getShipCords(ship);
+    const indexesToSkip = cordsArrToIndexArr(shipCords, this.#boardSize);
     const indexOffsets = this.#getIndexOffsets(anchor);
     const anchorIndex = cordsToIndex(anchor, this.#boardSize);
-    const indexClassMap = getIndexToClassMap(
-      anchorIndex,
-      indexOffsets,
-      domBoard
-    );
+    let indexClassMap = getIndexToClassMap(indexOffsets, anchorIndex, domBoard);
+    let targetIndexes = null;
+    let temp = null;
 
-    this.#makeOutline(anchor, indexClassMap, domBoard);
+    temp = this.#makeOutline(
+      anchor,
+      indexClassMap,
+      domBoard,
+      indexesToSkip,
+      board
+    );
+    targetIndexes = temp.val == null ? targetIndexes : temp;
+
+    removeShipAtIndexes(indexesToSkip, domBoard);
+
+    const keyHandler = (e) => {
+      if (e.key.toLowerCase() !== "r") return;
+      console.log("r");
+      const ref = this.#currentHover ?? anchor;
+      indexClassMap = this.#rotateIndexClassMap(indexClassMap);
+      temp = this.#makeOutline(
+        ref,
+        indexClassMap,
+        domBoard,
+        indexesToSkip,
+        board
+      );
+      targetIndexes = temp.val == null ? targetIndexes : temp;
+    };
+    document.addEventListener("keydown", keyHandler);
 
     this.#addCbToCells(
-      (cords, cell) => this.#makeOutline(cords, indexClassMap, domBoard),
+      (cords, cell) => {
+        this.#currentHover = cords;
+        temp = this.#makeOutline(
+          cords,
+          indexClassMap,
+          domBoard,
+          indexesToSkip,
+          board
+        );
+        targetIndexes = temp.val == null ? targetIndexes : temp;
+      },
       "mouseenter",
       this.#currentPlayer
     );
 
-    document.addEventListener("mouseup", () => {
-      this.#removeCbFromCells("mouseenter", this.#currentPlayer);
-      this.#removeOutline();
-    });
+    document.addEventListener(
+      "mouseup",
+      () => {
+        this.#removeCbFromCells("mouseenter", this.#currentPlayer);
+        this.#removeOutline();
+        document.removeEventListener("keydown", keyHandler);
+
+        if (!targetIndexes.valid) {
+          console.log("not valid placement");
+          this.render();
+          return;
+        }
+
+        const board = this.#currentPlayer.getBoard();
+        const ship = board.getCell(anchor).value;
+        const res = [];
+        for (const index of targetIndexes.val) {
+          res.push(indexToCords(index, this.#boardSize));
+        }
+        board.moveShip(res.sort(), ship);
+        this.render();
+      },
+      { once: true }
+    );
   };
 
-  #makeOutline(currCords, indexClassMap, domBoard) {
+  #rotateIndexClassMap(indexClassMap) {
+    const map = new Map();
+
+    let i = 0;
+    let startVal;
+    for (const [index, cssClass] of indexClassMap) {
+      const vertical = cssClass.includes("ver") ? true : false;
+      let className = cssClass
+        .split(" ")
+        .filter((cls) => !cls.includes("hor") && !cls.includes("ver"))
+        .join(" ");
+
+      if (i === 0) {
+        startVal = index;
+        className += vertical ? " hor-start" : " ver-start";
+      } else if (i === indexClassMap.size - 1) {
+        className += vertical ? " hor-end" : " ver-end";
+      } else {
+        className += vertical ? " hor" : " ver";
+      }
+
+      const newIndex = vertical ? startVal + i : startVal + i * this.#boardSize;
+
+      map.set(newIndex, className);
+      i++;
+    }
+    return map;
+  }
+
+  #makeOutline(currCords, indexClassMap, domBoard, indexesToSkip, board) {
     const currIndex = cordsToIndex(currCords, this.#boardSize);
     const targetIndices = [];
     let isValid = true;
 
+    //convert index offsets to actual indexes
     const values = [];
     for (const val of indexClassMap.keys()) {
       values.push(val + currIndex);
@@ -222,33 +311,21 @@ export class Controller {
       ? currIndex % this.#boardSize
       : Math.floor(currIndex / this.#boardSize);
 
+    //get calculate if its a valid place
     for (const [offset] of indexClassMap) {
       const targetIndex = currIndex + offset;
 
-      if (targetIndex < 0 || targetIndex >= domBoard.children.length) {
-        return;
-      }
+      if (!this.#validOutline(targetIndex, vertical, directionVal, domBoard))
+        return { val: null, valid: false };
 
-      const TargetDirectionVal = vertical
-        ? targetIndex % this.#boardSize
-        : Math.floor(targetIndex / this.#boardSize);
+      if (this.#isShipCell(targetIndex, board, indexesToSkip)) isValid = false;
 
-      if (directionVal != TargetDirectionVal) return;
-
-      const targetCell = domBoard.children[targetIndex];
-      const innerCell = targetCell.children[0];
-      if (
-        innerCell &&
-        (innerCell.classList.contains("ship-cell") ||
-          innerCell.classList.contains("ship-cell-hit"))
-      ) {
-        isValid = false;
-      }
       targetIndices.push(targetIndex);
     }
 
     this.#removeOutline();
 
+    //add actual copy
     for (let i = 0; i < targetIndices.length; i++) {
       const index = targetIndices[i];
       const classList = [...indexClassMap.values()][i];
@@ -258,6 +335,8 @@ export class Controller {
       cell.appendChild(newCell);
       this.#copyCells.push(cell);
     }
+
+    return { val: targetIndices, valid: isValid };
   }
 
   #removeOutline() {
@@ -267,20 +346,41 @@ export class Controller {
     }
     this.#copyCells = [];
   }
+
+  #validOutline(targetIndex, vertical, directionVal, domBoard) {
+    if (targetIndex < 0 || targetIndex >= domBoard.children.length) {
+      return false;
+    }
+    const maxRow = Math.sqrt(domBoard.children.length);
+    const targetDirectionVal = vertical
+      ? targetIndex % maxRow
+      : Math.floor(targetIndex / maxRow);
+    if (targetDirectionVal !== directionVal) return false;
+
+    return true;
+  }
+
+  #isShipCell(targetIndex, board, indexesToSkip) {
+    if (indexesToSkip.includes(targetIndex)) return false;
+    const shipIndexes = cordsArrToIndexArr(
+      board.getAllShipCords(),
+      this.#boardSize
+    );
+    console.log(board.getAllShipCords());
+    if (shipIndexes.includes(targetIndex)) return true;
+    return false;
+  }
 }
 
-function getIndexToClassMap(anchor, offsets, domBoard) {
+function getIndexToClassMap(offsets, anchor, domBoard) {
   const map = new Map();
-
   const cl = domBoard.children[anchor].children[0].className + " copy";
   map.set(0, cl);
-
   for (const offset of offsets) {
     const cl =
       domBoard.children[anchor + offset].children[0].className + " copy";
     map.set(offset, cl);
   }
-
   return map;
 }
 
@@ -296,5 +396,12 @@ function cordsToOffsets(anchor, cords) {
   return offsets;
 }
 
-//LOW PRIO:
-//fix so hit ship does not have small board border
+//TODO Drag & drop:
+//remove currently dragged ship and ignore its cells allowing for placement there
+
+//TODO create vs AI experience
+
+//TODO create pvp experience
+
+//nice to have
+//add smart anchor to drag & drop

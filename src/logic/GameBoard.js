@@ -35,7 +35,6 @@ export class Cell {
   }
 
   set value(val) {
-    if (!isValidShip(val)) return;
     this.#value = val;
   }
 
@@ -74,6 +73,22 @@ export class GameBoard {
 
   #placeShipAtCell([row, col], ship) {
     this.getCell([row, col]).value = ship;
+  }
+
+  moveShip(cordsArr, ship) {
+    if (!isValidShip(ship)) return;
+
+    this.#removeShip(ship);
+    this.placeShip(cordsArr, ship);
+  }
+
+  #removeShip(ship) {
+    const shipCords = this.getShipCords(ship);
+    for (const cord of shipCords) {
+      console.log("removing: " + cord);
+      const cell = this.getCell(cord);
+      cell.value = null;
+    }
   }
 
   receiveAttack([row, col]) {
@@ -118,7 +133,16 @@ export class GameBoard {
     return inRange([row, col], this.#gameBoard2dArr.length);
   }
 
-  getShipCords(ship){
-    return this.#ships.get(ship)
+  getShipCords(ship) {
+    return this.#ships.get(ship);
+  }
+
+  getAllShipCords() {
+    const res = [];
+
+    for (const val of this.#ships.values()) {
+      res.push(val);
+    }
+    return res.flat();
   }
 }

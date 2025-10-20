@@ -94,3 +94,10 @@ export function startShipDrag(cellSize) {
 
   function moveShip() {}
 }
+
+export function removeShipAtIndexes(indexes, domBoard) {
+  for (const index of indexes) {
+    domBoard.children[index].children[0].className = "default-cell";
+  }
+}
+
