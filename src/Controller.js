@@ -54,20 +54,44 @@ export class Controller {
     this.#p1 = new Player(board1, domBoard1);
     this.#p2 = new Player(board2, domBoard2);
     this.#currentPlayer = this.#p1;
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() !== "z") return;
+      this.#currentPlayer =
+        this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
+      this.render();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key.toLowerCase() !== "x") return;
+      this.#state = GameState.PLAY;
+      this.#currentPlayer = this.#p1;
+      this.render();
+    });
   }
 
   render() {
     const flatArr1 = this.#p1.getBoard().getFlatBoardCopy();
     const flatArr2 = this.#p2.getBoard().getFlatBoardCopy();
-    renderBoard(this.#p1.getDomBoard(), flatArr1);
-    renderBoard(this.#p2.getDomBoard(), flatArr2);
 
     switch (this.#state) {
       case GameState.BEFORE_PLAY:
+        if (this.#currentPlayer === this.#p1) {
+          renderBoard(this.#p1.getDomBoard(), flatArr1, true);
+          renderBoard(this.#p2.getDomBoard(), flatArr2);
+          this.setShipBorderAll(this.#p1);
+        } else {
+          renderBoard(this.#p1.getDomBoard(), flatArr1);
+          renderBoard(this.#p2.getDomBoard(), flatArr2, true);
+          this.setShipBorderAll(this.#p2);
+        }
         this.#addCbToBothPlayerCells(this.beforePlayCellClicked, "mousedown");
         break;
 
       case GameState.PLAY:
+        renderBoard(this.#p1.getDomBoard(), flatArr1);
+        renderBoard(this.#p2.getDomBoard(), flatArr2);
+        this.setShipBorderSunkShips();
         this.#addCbToBothPlayerCells(this.cellClicked, "mousedown");
         break;
 
@@ -77,9 +101,6 @@ export class Controller {
       default:
         throw new Error("THIS STATE IS NOT IMPLEMENTED!");
     }
-
-    this.setShipBorderAll(this.#p1);
-    this.setShipBorderAll(this.#p2);
   }
 
   initialShipSpawn() {
@@ -99,7 +120,7 @@ export class Controller {
     let cords = [];
     let vertical = Math.random() < 0.5;
 
-    for (let tries = 0; tries < 100; tries++) {
+    for (let tries = 0; tries < 200; tries++) {
       cords = [];
       const row = randomInt(0, vertical ? maxIndex - shipSize : maxIndex);
       const col = randomInt(0, vertical ? maxIndex : maxIndex - shipSize);
@@ -132,6 +153,22 @@ export class Controller {
     }
   }
 
+  setShipBorderSunkShips() {
+    this.#setShipBorderSunkPlayer(this.#p1);
+    this.#setShipBorderSunkPlayer(this.#p2);
+  }
+
+  #setShipBorderSunkPlayer(player) {
+    const ships = player.getBoard().getShips();
+    const domBoard = player.getDomBoard();
+
+    for (const [ship, cords] of ships) {
+      if (!ship.isSunk()) continue;
+      const index = cordsArrToIndexArr(cords, this.#boardSize);
+      addBorderToShip(domBoard, index);
+    }
+  }
+
   setShipBorder(player, ship) {
     const shipCords = player.getBoard().getShips().get(ship);
     const domBoard = player.getDomBoard();
@@ -149,12 +186,20 @@ export class Controller {
   }
 
   cellClicked = ([row, col], cell) => {
-    if (this.#currentPlayer.getDomBoard() != cell.parentElement) return;
+    if (this.#currentPlayer.getDomBoard() == cell.parentElement) return;
+    const enemy = this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
 
-    this.#currentPlayer.getBoard().receiveAttack([row, col]);
-    this.#flipTurn();
+    if (!enemy.getBoard().receiveAttack([row, col])) {
+      this.#flipTurn();
+    }
 
     this.render();
+    if (enemy.getBoard().allShipsSunk()) {
+      const player = this.#currentPlayer === this.#p1 ? "p1" : "p2";
+      setTimeout(() => {
+        alert(`${player} Won!`);
+      }, 0);
+    }
   };
 
   #flipTurn() {
@@ -366,7 +411,6 @@ export class Controller {
       board.getAllShipCords(),
       this.#boardSize
     );
-    console.log(board.getAllShipCords());
     if (shipIndexes.includes(targetIndex)) return true;
     return false;
   }
@@ -396,12 +440,13 @@ function cordsToOffsets(anchor, cords) {
   return offsets;
 }
 
-//TODO Drag & drop:
-//remove currently dragged ship and ignore its cells allowing for placement there
-
 //TODO create vs AI experience
+//if ai always render player ships, never render AI ships
+//give option for stupid or (shoot adj) smart ai
 
 //TODO create pvp experience
+//render current player ships, make swap current player button
+//keep game like it is
 
 //nice to have
 //add smart anchor to drag & drop

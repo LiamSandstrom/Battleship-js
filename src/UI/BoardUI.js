@@ -1,41 +1,49 @@
 import { indexToCords } from "../helpers/utils.js";
 
-export function renderBoard(div, arr) {
+export function renderBoard(div, arr, renderShips = false) {
   div.innerHTML = "";
   const rowSize = Math.sqrt(arr.length);
   div.style.gridTemplateColumns = `repeat(${rowSize}, 1fr)`;
   div.style.gridTemplateRows = `repeat(${rowSize}, 1fr)`;
   for (let i = 0; i < arr.length; i++) {
     const cellObj = arr[i];
-    div.appendChild(createCell(cellObj));
+    div.appendChild(createCell(cellObj, renderShips));
   }
 
-  function createCell(cellObj) {
+  function createCell(cellObj, renderShips) {
     const cell = document.createElement("div");
     cell.classList.add("cell");
 
     const cellContent = document.createElement("div");
     cell.appendChild(cellContent);
-    addClassToCell(cellContent, cellObj);
+    addClassToCell(cellContent, cellObj, renderShips);
 
     return cell;
   }
 
-  function addClassToCell(cell, cellObj) {
+  function addClassToCell(cell, cellObj, renderShips) {
+    if (!cellObj.isHit && cellObj.isShip) {
+      if (!renderShips) {
+        cell.classList.add("default-cell");
+        return;
+      }
+      cell.classList.add("ship-cell");
+      return;
+    }
+
     if (!cellObj.isHit && !cellObj.isShip) {
       cell.classList.add("default-cell");
+      return;
     }
 
     if (cellObj.isHit && !cellObj.isShip) {
       cell.classList.add("default-cell-hit");
-    }
-
-    if (!cellObj.isHit && cellObj.isShip) {
-      cell.classList.add("ship-cell");
+      return;
     }
 
     if (cellObj.isHit && cellObj.isShip) {
       cell.classList.add("ship-cell-hit");
+      return;
     }
   }
 }
@@ -89,15 +97,8 @@ export function removeCbFromCells(event, player, div) {
   }
 }
 
-export function startShipDrag(cellSize) {
-  const shipCopy = document.createElement("div");
-
-  function moveShip() {}
-}
-
 export function removeShipAtIndexes(indexes, domBoard) {
   for (const index of indexes) {
     domBoard.children[index].children[0].className = "default-cell";
   }
 }
-

@@ -28,10 +28,11 @@ export class Cell {
   }
 
   hit() {
-    if (this.#isHit) return;
+    if (this.#isHit) return false;
     this.#isHit = true;
-    if (!isValidShip(this.#value)) return;
+    if (!isValidShip(this.#value)) return false;
     this.#value.hit();
+    return true;
   }
 
   set value(val) {
@@ -85,7 +86,6 @@ export class GameBoard {
   #removeShip(ship) {
     const shipCords = this.getShipCords(ship);
     for (const cord of shipCords) {
-      console.log("removing: " + cord);
       const cell = this.getCell(cord);
       cell.value = null;
     }
@@ -97,10 +97,10 @@ export class GameBoard {
       console.error("Not a Cell:", cell);
       throw new Error("Cell is invalid");
     }
-    cell.hit();
+    return cell.hit();
   }
 
-  AllShipsSunken() {
+  allShipsSunk() {
     for (const ship of this.#ships.keys()) {
       if (!ship.isSunk()) return false;
     }
@@ -121,6 +121,7 @@ export class GameBoard {
         flat.push({
           isHit: cell.isHit(),
           isShip: cell.isShip(),
+          isSunk: cell.isShip() ? cell.value.isSunk() : false,
         });
       }
     }

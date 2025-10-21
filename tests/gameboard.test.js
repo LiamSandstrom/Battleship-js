@@ -101,7 +101,7 @@ test("receiveAttack on empty", () => {
   expect(cell.isHit()).toBe(true);
 });
 
-describe("GameBoard AllShipsSunken", () => {
+describe("GameBoard llShipsSunk", () => {
   test("returns true if all ships are sunk", () => {
     const board = new GameBoard(5);
 
@@ -124,22 +124,22 @@ describe("GameBoard AllShipsSunken", () => {
       ship2
     );
 
-    expect(board.AllShipsSunken()).toBe(false);
+    expect(board.allShipsSunk()).toBe(false);
 
     ship1.hit([0, 0]);
     ship1.hit([0, 1]);
 
-    expect(board.AllShipsSunken()).toBe(false);
+    expect(board.allShipsSunk()).toBe(false);
 
     ship2.hit([1, 0]);
     ship2.hit([1, 1]);
     ship2.hit([1, 2]);
 
-    expect(board.AllShipsSunken()).toBe(true);
+    expect(board.allShipsSunk()).toBe(true);
   });
 
   test("returns true if there are no ships", () => {
     const board = new GameBoard(5);
-    expect(board.AllShipsSunken()).toBe(true);
+    expect(board.allShipsSunk()).toBe(true);
   });
 });
