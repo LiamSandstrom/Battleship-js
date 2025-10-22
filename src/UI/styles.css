@@ -1,12 +1,19 @@
 :root {
   --bg-color: black;
   --board-color: rgba(255, 255, 255, 0.502);
-  --ship-border: 2px solid rgb(88, 88, 88);
+  --ship-border: 2px solid rgb(35, 35, 35);
   --water-color: rgb(117, 181, 205);
+  --miss-color: rgb(60, 74, 95);
   --can-place: rgb(121, 225, 121);
   --cant-place: red;
 
   --ship-size: 90%;
+}
+
+*,
+button {
+  font-family: "VT323", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
 
 body {
@@ -14,6 +21,7 @@ body {
   min-height: 100vh;
 
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
@@ -28,17 +36,17 @@ body {
   align-items: center;
   justify-items: center;
   padding: 30px;
+  padding-top: 10px;
   gap: 20px;
 }
 
 .board {
-  border: 4px solid var(--board-color);
+  border: 3px solid var(--board-color);
   display: grid;
   width: 100%;
   max-width: 400px;
   aspect-ratio: 1 / 1;
   padding: 5px;
-  border-radius: 10px;
   background-color: var(--water-color);
 }
 
@@ -47,7 +55,7 @@ body {
   display: grid;
 }
 
-.cell > *{
+.cell > * {
   pointer-events: none;
 }
 
@@ -59,9 +67,8 @@ body {
   background-color: var(--can-place);
 }
 
-.ship-cell.copy.cant-place{
+.ship-cell.copy.cant-place {
   background-color: var(--cant-place);
-
 }
 
 .default-cell {
@@ -71,17 +78,56 @@ body {
 
 .default-cell-hit {
   transition: background-color 1s;
-  background-color: rgb(60, 74, 95);
+  background-color: var(--miss-color);
+  border: 1px solid #c5c1c1ce;
 }
 
 .ship-cell,
 .ship-copy {
-  background-color: rgb(127, 131, 132);
+  background-color: rgb(65, 66, 66);
   border: none;
 }
 
 .ship-cell-hit {
   background-color: rgb(168, 83, 83);
+}
+
+.ship-hit-anim {
+  animation: ship-hit-blink 0.4s;
+}
+
+.miss-anim {
+  animation: miss-blink 0.3s ease-in-out;
+}
+
+@keyframes ship-hit-blink {
+  0% {
+    background-color: rgb(168, 83, 83);
+  }
+  25% {
+    background-color: rgb(255, 255, 255);
+  }
+  50% {
+    background-color: rgb(168, 83, 83);
+  }
+  75% {
+    background-color: rgb(255, 255, 255);
+  }
+  100% {
+    background-color: rgb(168, 83, 83);
+  }
+}
+
+@keyframes miss-blink {
+  0% {
+    background-color: var(--water-color);
+  }
+  50% {
+    background-color: rgb(207, 210, 218);
+  }
+  100% {
+    background-color: var(--miss-color);
+  }
 }
 
 .ship-copy {
@@ -167,6 +213,64 @@ body {
   position: fixed;
   display: grid;
   aspect-ratio: 1 / 1;
+}
+
+#ai-or-pvp {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  min-width: 300px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  background-color: rgb(28, 27, 27);
+  padding: 40px;
+  border: 2px solid #ffffff;
+}
+
+#ai-or-pvp h2 {
+  color: white;
+  text-align: center;
+
+  font-size: 2.3rem;
+}
+
+#ai-or-pvp div {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  width: 140px;
+  border: 1px solid black;
+
+  cursor: pointer;
+  background-color: #f1f1f1;
+  color: rgb(47, 47, 47);
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #99cc73;
+  border-color: white;
+}
+
+#buttons {
+  margin-top: 20px;
+  margin-bottom: 0;
+  display: flex;
+  gap: 10px;
+}
+
+.curr-board {
+  transition: border-color 0.5s;
+  border-color: #be482d;
 }
 
 @media screen and (min-width: 900px) {

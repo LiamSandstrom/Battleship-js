@@ -55,19 +55,45 @@ export class Controller {
     this.#p2 = new Player(board2, domBoard2);
     this.#currentPlayer = this.#p1;
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key.toLowerCase() !== "z") return;
-      this.#currentPlayer =
-        this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
-      this.render();
-    });
+    // document.addEventListener("keydown", (e) => {
+    //   if (e.key.toLowerCase() !== "z") return;
+    //   this.#currentPlayer =
+    //     this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
+    //   this.render();
+    // });
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key.toLowerCase() !== "x") return;
+    // document.addEventListener("keydown", (e) => {
+    //   if (e.key.toLowerCase() !== "x") return;
+    //   this.#state = GameState.PLAY;
+    //   this.#currentPlayer = this.#p1;
+    //   this.render();
+    // });
+
+    const div = document.querySelector("#buttons");
+    const swapButton = document.createElement("button");
+    if (!this.#p2IsAI) {
+      swapButton.textContent = "Swap player";
+      swapButton.addEventListener("click", () => {
+        this.#currentPlayer =
+          this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
+        this.render();
+      });
+
+      div.appendChild(swapButton);
+    }
+
+    const startButton = document.createElement("button");
+
+    startButton.textContent = "Start";
+    startButton.addEventListener("click", () => {
       this.#state = GameState.PLAY;
       this.#currentPlayer = this.#p1;
       this.render();
+      div.removeChild(startButton);
+      if (!this.#p2IsAI) div.removeChild(swapButton);
     });
+
+    div.appendChild(startButton);
   }
 
   render() {
@@ -89,10 +115,31 @@ export class Controller {
         break;
 
       case GameState.PLAY:
-        renderBoard(this.#p1.getDomBoard(), flatArr1);
-        renderBoard(this.#p2.getDomBoard(), flatArr2);
+        this.#addBorder();
+        if (this.#p2IsAI) {
+          renderBoard(this.#p1.getDomBoard(), flatArr1, true);
+          renderBoard(this.#p2.getDomBoard(), flatArr2);
+          this.setShipBorderAll(this.#p1);
+          if (this.#currentPlayer == this.#p2) {
+            console.log("Shoot!");
+            const shotObj = this.#p2.shoot(
+              this.#p1.getDomBoard(),
+              this.#boardSize
+            );
+            if (shotObj != undefined)
+              setTimeout(
+                () => this.cellClicked(shotObj.cords, shotObj.cell),
+                1000
+              );
+          } else {
+            this.#addCbToCells(this.cellClicked, "mousedown", this.#p2);
+          }
+        } else {
+          renderBoard(this.#p1.getDomBoard(), flatArr1);
+          renderBoard(this.#p2.getDomBoard(), flatArr2);
+          this.#addCbToBothPlayerCells(this.cellClicked, "mousedown");
+        }
         this.setShipBorderSunkShips();
-        this.#addCbToBothPlayerCells(this.cellClicked, "mousedown");
         break;
 
       case GameState.AFTER_PLAY:
@@ -101,6 +148,21 @@ export class Controller {
       default:
         throw new Error("THIS STATE IS NOT IMPLEMENTED!");
     }
+  }
+
+  #addBorder() {
+    let curr;
+    let enemy;
+    if (this.#currentPlayer == this.#p1) {
+      curr = this.#p2;
+      enemy = this.#p1;
+    } else {
+      curr = this.#p1;
+      enemy = this.#p2;
+    }
+
+    enemy.getDomBoard().classList.remove("curr-board");
+    curr.getDomBoard().classList.add("curr-board");
   }
 
   initialShipSpawn() {
@@ -189,16 +251,28 @@ export class Controller {
     if (this.#currentPlayer.getDomBoard() == cell.parentElement) return;
     const enemy = this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
 
+    let hit = true;
     if (!enemy.getBoard().receiveAttack([row, col])) {
+      hit = false;
       this.#flipTurn();
     }
 
     this.render();
+    const index = cordsToIndex([row, col], this.#boardSize);
+    if (hit) {
+      enemy
+        .getDomBoard()
+        .children[index].children[0].classList.add("ship-hit-anim");
+    } else {
+      enemy
+        .getDomBoard()
+        .children[index].children[0].classList.add("miss-anim");
+    }
     if (enemy.getBoard().allShipsSunk()) {
+      if (this.#state === GameState.AFTER_PLAY) return;
       const player = this.#currentPlayer === this.#p1 ? "p1" : "p2";
-      setTimeout(() => {
-        alert(`${player} Won!`);
-      }, 0);
+      this.#state = GameState.AFTER_PLAY;
+      alert(`${player} Won!`);
     }
   };
 
@@ -439,14 +513,3 @@ function cordsToOffsets(anchor, cords) {
   }
   return offsets;
 }
-
-//TODO create vs AI experience
-//if ai always render player ships, never render AI ships
-//give option for stupid or (shoot adj) smart ai
-
-//TODO create pvp experience
-//render current player ships, make swap current player button
-//keep game like it is
-
-//nice to have
-//add smart anchor to drag & drop
