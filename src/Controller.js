@@ -121,7 +121,6 @@ export class Controller {
           renderBoard(this.#p2.getDomBoard(), flatArr2);
           this.setShipBorderAll(this.#p1);
           if (this.#currentPlayer == this.#p2) {
-            console.log("Shoot!");
             const shotObj = this.#p2.shoot(
               this.#p1.getDomBoard(),
               this.#boardSize
@@ -182,7 +181,7 @@ export class Controller {
     let cords = [];
     let vertical = Math.random() < 0.5;
 
-    for (let tries = 0; tries < 200; tries++) {
+    for (let tries = 0; tries < 10000; tries++) {
       cords = [];
       const row = randomInt(0, vertical ? maxIndex - shipSize : maxIndex);
       const col = randomInt(0, vertical ? maxIndex : maxIndex - shipSize);
@@ -248,6 +247,7 @@ export class Controller {
   }
 
   cellClicked = ([row, col], cell) => {
+    if (this.#state === GameState.AFTER_PLAY) return;
     if (this.#currentPlayer.getDomBoard() == cell.parentElement) return;
     const enemy = this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
 
@@ -329,7 +329,6 @@ export class Controller {
 
     const keyHandler = (e) => {
       if (e.key.toLowerCase() !== "r") return;
-      console.log("r");
       const ref = this.#currentHover ?? anchor;
       indexClassMap = this.#rotateIndexClassMap(indexClassMap);
       temp = this.#makeOutline(
@@ -367,7 +366,6 @@ export class Controller {
         document.removeEventListener("keydown", keyHandler);
 
         if (!targetIndexes.valid) {
-          console.log("not valid placement");
           this.render();
           return;
         }
@@ -378,8 +376,17 @@ export class Controller {
         for (const index of targetIndexes.val) {
           res.push(indexToCords(index, this.#boardSize));
         }
-        board.moveShip(res.sort(), ship);
-        this.render();
+        console.log(res);
+        board.moveShip(
+          res.sort((a, b) => {
+            if (a[0] !== b[0]) return a[0] - b[0];
+            return a[1] - b[1];
+          }),
+          ship
+        );
+        setTimeout(() => {
+          this.render();
+        }, 10);
       },
       { once: true }
     );

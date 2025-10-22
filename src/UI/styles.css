@@ -38,6 +38,8 @@ body {
   padding: 30px;
   padding-top: 10px;
   gap: 20px;
+
+  visibility: hidden;
 }
 
 .board {
@@ -271,6 +273,37 @@ button:hover {
 .curr-board {
   transition: border-color 0.5s;
   border-color: #be482d;
+}
+
+#custom-settings-btn {
+  width: 200px;
+}
+
+.custom-settings {
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
+  min-width: 300px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  background-color: rgb(28, 27, 27);
+  padding: 40px;
+  border: 2px solid #ffffff;
+}
+
+.custom-settings h3{
+  color: white;
+}
+
+.custom-settings div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 @media screen and (min-width: 900px) {
