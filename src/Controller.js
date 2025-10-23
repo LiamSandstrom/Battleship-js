@@ -250,6 +250,10 @@ export class Controller {
     if (this.#state === GameState.AFTER_PLAY) return;
     if (this.#currentPlayer.getDomBoard() == cell.parentElement) return;
     const enemy = this.#currentPlayer === this.#p1 ? this.#p2 : this.#p1;
+    if (enemy.getBoard().getCell([row, col]).isHit()) {
+      this.render();
+      return;
+    }
 
     let hit = true;
     if (!enemy.getBoard().receiveAttack([row, col])) {
